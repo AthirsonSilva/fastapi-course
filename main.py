@@ -3,6 +3,7 @@ from fastapi import FastAPI, status, HTTPException
 from fastapi.responses import JSONResponse
 from Post import Post
 from posts import posts
+from utils import convert_uuid_to_string
 
 app = FastAPI()
 
@@ -28,12 +29,12 @@ async def find_latest() -> JSONResponse:
         raise HTTPException(
             status_code=404, detail=f"Post with id: {id} not found!")
 
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"data": post})
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"data": convert_uuid_to_string([post])})
 
 
 @app.get("/api/v1/posts")
 async def find_all() -> JSONResponse:
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"data": posts})
+	return JSONResponse(status_code=status.HTTP_200_OK, content={"data": convert_uuid_to_string(posts)})
 
 
 @app.get("/api/v1/posts/{id}")
