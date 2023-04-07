@@ -1,9 +1,9 @@
 import uuid
 from fastapi import FastAPI, status, HTTPException
 from fastapi.responses import JSONResponse
-from Post import Post
-from posts import posts
-from utils import convert_uuid_to_string
+from src.Post import Post
+from src.posts import posts
+from src.utils import convert_uuid_to_string
 
 app = FastAPI()
 

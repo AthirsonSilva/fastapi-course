@@ -1,5 +1,5 @@
-/venv
-/.venv
-/__pycache__
-/.vscode
-/.idea
+venv/
+.venv/
+.vscode/
+.idea/
+__pycache__/
