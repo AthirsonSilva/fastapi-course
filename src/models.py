@@ -16,3 +16,14 @@ class Post(Base):
     published = Column(Boolean, nullable=False, default=False, server_default="TRUE")
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.utcnow, server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.utcnow, server_default=text("now()"))
+
+
+class User(Base):
+    __tablename__ = "user"
+
+    id = Column(UUID, primary_key=True, index=True, unique=True, default=uuid.uuid4,
+                server_default=text("uuid_generate_v4()"))
+    email = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.utcnow, server_default=text("now()"))
+    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.utcnow, server_default=text("now()"))
