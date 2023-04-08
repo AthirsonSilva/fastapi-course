@@ -9,7 +9,7 @@ from src.schemas import PostCreate, PostUpdate, PostResponse
 
 router = APIRouter(
     prefix="/api/v1/posts",
-    tags=["posts"],
+    tags=["Posts resources"],
 )
 
 

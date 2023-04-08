@@ -10,7 +10,7 @@ from src.utils import hash_password
 
 router = APIRouter(
     prefix="/api/v1/users",
-    tags=["users"],
+    tags=["User resources"],
 )
 
 
