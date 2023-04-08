@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -6,18 +7,24 @@ from pydantic import BaseModel, Field
 
 class PostBase(BaseModel):
     id: Optional[uuid.UUID]
-    title: str
-    content: str
-    published: bool
+    title: str = Field(..., min_length=1, max_length=100)
+    content: str = Field(..., min_length=1, max_length=1000)
+    published: bool = Field(...)
 
 
-class CreatePost(PostBase):
-    title: str = Field(...)
-    content: str = Field(...)
-    published: bool = Field(default=True)
+class PostCreate(PostBase):
+    pass
 
 
-class UpdatePost(PostBase):
-    title: Optional[str] = Field(...)
-    content: Optional[str] = Field(...)
-    published: Optional[bool] = Field(...)
+class PostUpdate(PostBase):
+    title: Optional[str]
+    content: Optional[str]
+    published: Optional[bool]
+
+
+class PostResponse(PostBase):
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
