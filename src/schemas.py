@@ -45,7 +45,9 @@ class UserUpdate(UserBase):
     password: Optional[str]
 
 
-class UserResponse(UserBase):
+class UserResponse(BaseModel):
+    id: uuid.UUID
+    email: str
     created_at: datetime
     updated_at: datetime
 
