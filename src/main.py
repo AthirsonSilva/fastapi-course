@@ -1,21 +1,17 @@
 import uuid
-from fastapi import FastAPI, status, HTTPException, Depends
-from fastapi.responses import JSONResponse
+from datetime import datetime
+
+from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 
-from src.Post import Post
-from src.posts import posts
 from src import models
+from src.Post import Post
 from src.database import engine, get_db
+from src.posts import posts
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
-
-@app.get("/sql")
-def test(db: Session = Depends(get_db)):
-    return db.query(models.Post).all()
 
 
 @app.get("/")
@@ -24,23 +20,26 @@ async def root():
 
 
 @app.post("/api/v1/posts")
-async def create(request: Post):
-    post_dict = request.dict()
-    post_dict["id"] = uuid.uuid4()
-    posts.append(post_dict)
+async def create(request: Post, db: Session = Depends(get_db)):
+    post = models.Post(**request.dict())
 
-    return {"message": "Post created successfully!", "data": post_dict}
+    db.add(post)
+    db.commit()
+
+    db.refresh(post)
+
+    return {"message": "Post created successfully!", "data": post}
 
 
 @app.get("/api/v1/posts/latest")
-async def find_latest() -> dict:
-    post = posts[-1]
+async def find_latest(db: Session = Depends(get_db)):
+    latest_post = db.query(models.Post).order_by(models.Post.created_at.desc()).first()
 
-    if not post:
+    if not latest_post:
         raise HTTPException(
             status_code=404, detail=f"Post with id: {id} not found!")
 
-    return {"data": post}
+    return {"data": latest_post}
 
 
 @app.get("/api/v1/posts")
@@ -49,31 +48,35 @@ async def find_all(db: Session = Depends(get_db)) -> dict:
     return {"data": post_list}
 
 
-@app.get("/api/v1/posts/{id}")
-async def find_one(post_id: str):
+@app.get("/api/v1/posts/{post_id}")
+async def find_one(post_id: str, db: Session = Depends(get_db)):
     try:
-        post = [post for post in posts if post["id"] == post_id]
+        if not id:
+            raise HTTPException(status_code=400, detail="ID field is required!")
 
-        if not post:
+        found_post = db.query(models.Post).filter(models.Post.id == post_id).first()
+
+        if not found_post:
             raise HTTPException(
                 status_code=404, detail=f"Post with id: {post_id} not found!")
 
-        return {"data": post[0]}
+        return {"data": found_post}
 
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format!")
 
 
-@app.delete("/api/v1/posts/{id}")
-async def delete(post_id: str):
+@app.delete("/api/v1/posts/{post_id}")
+async def delete(post_id: str, db: Session = Depends(get_db)):
     try:
-        post = [post for post in posts if post["id"] == post_id]
+        post = db.query(models.Post).filter(models.Post.id == post_id).first()
 
         if not post:
             raise HTTPException(
                 status_code=404, detail=f"Post with id: {post_id} not found!")
 
-        posts.remove(post[0])
+        db.delete(post)
+        db.commit()
 
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format!")
@@ -81,18 +84,26 @@ async def delete(post_id: str):
     return {"message": "Post deleted successfully!"}
 
 
-@app.put("/api/v1/posts/{id}")
-async def update(post_id: str, request: Post):
+@app.put("/api/v1/posts/{post_id}")
+async def update(post_id: str, request: Post, db: Session = Depends(get_db)):
     try:
-        for index, post in enumerate(posts):
-            if post["id"] == post_id:
-                posts[index] = request.dict()
-                posts[index]["id"] = post_id
+        post = db.query(models.Post).filter(models.Post.id == post_id).first()
 
-                return {"message": "Post updated successfully!", "data": posts[index]}
+        if not post:
+            raise HTTPException(
+                status_code=404, detail=f"Post with id: {post_id} not found!")
 
-        raise HTTPException(
-            status_code=404, detail=f"Post with id: {post_id} not found!")
+        request = Post(**request.dict())
+        post.title = request.title or post.title
+        post.content = request.content or post.content
+        post.published = request.published or post.published
+        post.updated_at = datetime.utcnow()
+
+        db.add(post)
+        db.commit()
+        db.refresh(post)
+
+        return {"message": "Post updated successfully!", "data": post}
 
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format!")
