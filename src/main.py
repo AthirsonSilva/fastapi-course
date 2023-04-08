@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from src import models
-from src.schemas import PostBase, PostCreate, PostUpdate, PostResponse
+from src.schemas import PostBase, PostCreate, PostUpdate, PostResponse, UserResponse, UserCreate
 from src.database import engine, get_db
 
 models.Base.metadata.create_all(bind=engine)
@@ -108,3 +108,14 @@ async def update(post_id: str, request: PostUpdate, db: Session = Depends(get_db
     except ValueError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Invalid data. Please check your request and try again!")
+
+
+@app.post("/api/v1/users", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_user(request: UserCreate, db: Session = Depends(get_db)):
+    user = models.User(**request.dict())
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return user
