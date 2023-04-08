@@ -28,3 +28,26 @@ class PostResponse(PostBase):
 
     class Config:
         orm_mode = True
+
+
+class UserBase(BaseModel):
+    id: Optional[uuid.UUID]
+    email: str = Field(..., min_length=1, max_length=100)
+    password: str = Field(..., min_length=1, max_length=100)
+
+
+class UserCreate(UserBase):
+    pass
+
+
+class UserUpdate(UserBase):
+    email: Optional[str]
+    password: Optional[str]
+
+
+class UserResponse(UserBase):
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
