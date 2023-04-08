@@ -5,9 +5,8 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 
 from src import models
-from src.Post import Post
+from src.schemas import PostBase, CreatePost, UpdatePost
 from src.database import engine, get_db
-from src.posts import posts
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -16,11 +15,11 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"Hello World"}
 
 
 @app.post("/api/v1/posts")
-async def create(request: Post, db: Session = Depends(get_db)):
+async def create(request: CreatePost, db: Session = Depends(get_db)):
     post = models.Post(**request.dict())
 
     db.add(post)
@@ -28,7 +27,7 @@ async def create(request: Post, db: Session = Depends(get_db)):
 
     db.refresh(post)
 
-    return {"message": "Post created successfully!", "data": post}
+    return post
 
 
 @app.get("/api/v1/posts/latest")
@@ -39,13 +38,13 @@ async def find_latest(db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=404, detail=f"Post with id: {id} not found!")
 
-    return {"data": latest_post}
+    return latest_post
 
 
 @app.get("/api/v1/posts")
 async def find_all(db: Session = Depends(get_db)) -> dict:
     post_list = db.query(models.Post).all()
-    return {"data": post_list}
+    return post_list
 
 
 @app.get("/api/v1/posts/{post_id}")
@@ -60,7 +59,7 @@ async def find_one(post_id: str, db: Session = Depends(get_db)):
             raise HTTPException(
                 status_code=404, detail=f"Post with id: {post_id} not found!")
 
-        return {"data": found_post}
+        return found_post
 
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format!")
@@ -81,11 +80,11 @@ async def delete(post_id: str, db: Session = Depends(get_db)):
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format!")
 
-    return {"message": "Post deleted successfully!"}
+    return "Post deleted successfully!"
 
 
 @app.put("/api/v1/posts/{post_id}")
-async def update(post_id: str, request: Post, db: Session = Depends(get_db)):
+async def update(post_id: str, request: UpdatePost, db: Session = Depends(get_db)):
     try:
         post = db.query(models.Post).filter(models.Post.id == post_id).first()
 
@@ -93,7 +92,7 @@ async def update(post_id: str, request: Post, db: Session = Depends(get_db)):
             raise HTTPException(
                 status_code=404, detail=f"Post with id: {post_id} not found!")
 
-        request = Post(**request.dict())
+        request = PostBase(**request.dict())
         post.title = request.title or post.title
         post.content = request.content or post.content
         post.published = request.published or post.published
@@ -103,7 +102,7 @@ async def update(post_id: str, request: Post, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(post)
 
-        return {"message": "Post updated successfully!", "data": post}
+        return post
 
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format!")
