@@ -7,6 +7,8 @@ from src import models
 from src.database import get_db
 from src.schemas import PostCreate, PostUpdate, PostResponse
 
+import src.oauth2 as oauth2
+
 router = APIRouter(
     prefix="/api/v1/posts",
     tags=["Posts resources"],
@@ -14,8 +16,10 @@ router = APIRouter(
 
 
 @router.post("", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
-async def create(request: PostCreate, db: Session = Depends(get_db)):
+async def create(request: PostCreate, db: Session = Depends(get_db),
+                 current_user: models.User = Depends(oauth2.get_current_user)):
     post = models.Post(**request.dict())
+    print(current_user.email)
 
     db.add(post)
     db.commit()
@@ -60,7 +64,7 @@ async def find_one(post_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete(post_id: str, db: Session = Depends(get_db)):
+async def delete(post_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
     try:
         post = db.query(models.Post).filter(models.Post.id == post_id).first()
 
@@ -78,7 +82,7 @@ async def delete(post_id: str, db: Session = Depends(get_db)):
 
 
 @router.put("/{post_id}", response_model=PostResponse, status_code=status.HTTP_200_OK)
-async def update(post_id: str, request: PostUpdate, db: Session = Depends(get_db)):
+async def update(post_id: str, request: PostUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
     try:
         post = db.query(models.Post).filter(models.Post.id == post_id).first()
 
