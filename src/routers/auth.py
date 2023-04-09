@@ -19,4 +19,4 @@ def login(credentials: schemas.UserLogin, db: Session = Depends(database.get_db)
     if not password_verify(credentials.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Wrong password.")
 
-    return {"access_token": create_access_token(sub={"sub": user.email})}
+    return create_access_token(sub={"sub": user.email})
