@@ -5,12 +5,14 @@ from src import database, schemas, models
 from src.oauth2 import create_access_token
 from src.utils import password_verify
 
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+
 router = APIRouter(tags=['Authentication resources'], prefix='/api/v1/auth')
 
 
 @router.post("/login", response_model=dict, status_code=status.HTTP_201_CREATED)
-def login(credentials: schemas.UserLogin, db: Session = Depends(database.get_db)):
-    user = db.query(models.User).filter(models.User.email == credentials.email).first()
+def login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.email == credentials.username).first()
 
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
