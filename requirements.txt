@@ -4,3 +4,6 @@ passlib==1.7.4
 pydantic~=1.10.7
 SQLAlchemy~=2.0.9
 starlette~=0.26.1
+jose~=1.0.0
+PyJWT~=2.6.0
+decouple~=0.0.7

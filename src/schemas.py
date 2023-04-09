@@ -45,6 +45,11 @@ class UserUpdate(UserBase):
     password: Optional[str]
 
 
+class UserLogin(BaseModel):
+    email: str = Field(..., min_length=1, max_length=100)
+    password: str = Field(..., min_length=1, max_length=100)
+
+
 class UserResponse(BaseModel):
     id: uuid.UUID
     email: str
