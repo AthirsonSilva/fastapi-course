@@ -44,6 +44,12 @@ async def find_all(db: Session = Depends(get_db)):
     return post_list
 
 
+@router.get("/my-posts", response_model=list[PostResponse], status_code=status.HTTP_200_OK)
+async def find_by_user(db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
+    post_list = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
+    return post_list
+
+
 @router.get("/{post_id}", response_model=PostResponse, status_code=status.HTTP_200_OK)
 async def find_one(post_id: str, db: Session = Depends(get_db)):
     try:
