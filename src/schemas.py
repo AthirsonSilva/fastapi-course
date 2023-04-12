@@ -55,7 +55,6 @@ class UserResponse(BaseModel):
 class UserPostModel(PostBase):
     created_at: datetime
     updated_at: datetime
-    owner_id: uuid.UUID
 
     class Config:
         orm_mode = True

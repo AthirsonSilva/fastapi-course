@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
@@ -40,8 +40,14 @@ async def find_latest(db: Session = Depends(get_db)):
 
 
 @router.get("", response_model=List[PostResponse], status_code=status.HTTP_200_OK)
-async def find_all(db: Session = Depends(get_db)):
-    post_list = db.query(models.Post).all()
+async def find_all(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+    post_list = db.query(models.Post) \
+        .order_by(models.Post.created_at.asc()) \
+        .filter(models.Post.title.contains(search)) \
+        .offset(skip) \
+        .limit(limit) \
+        .all()
+
     return post_list
 
 
