@@ -10,6 +10,7 @@ class PostBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=100)
     content: str = Field(..., min_length=1, max_length=1000)
     published: bool = Field(...)
+    owner_id: uuid.UUID
 
 
 class PostCreate(PostBase):

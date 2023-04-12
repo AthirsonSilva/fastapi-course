@@ -19,7 +19,6 @@ router = APIRouter(
 async def create(request: PostCreate, db: Session = Depends(get_db),
                  current_user: models.User = Depends(oauth2.get_current_user)):
     post = models.Post(**request.dict())
-    print(current_user.email)
 
     db.add(post)
     db.commit()

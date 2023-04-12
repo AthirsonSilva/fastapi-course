@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Boolean, UUID, Text, text, TIMESTAMP
+from sqlalchemy import Column, Integer, String, Boolean, UUID, Text, text, TIMESTAMP, ForeignKey
 
 from .database import Base
 
@@ -16,6 +16,7 @@ class Post(Base):
     published = Column(Boolean, nullable=False, default=False, server_default="TRUE")
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.utcnow, server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.utcnow, server_default=text("now()"))
+    owner_id = Column(UUID, ForeignKey("user.id", ondelete='CASCADE'), nullable=False)
 
 
 class User(Base):
