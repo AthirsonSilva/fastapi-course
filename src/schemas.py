@@ -22,15 +22,6 @@ class PostUpdate(PostBase):
     published: Optional[bool]
 
 
-class PostResponse(PostBase):
-    created_at: datetime
-    updated_at: datetime
-    owner_id: uuid.UUID
-
-    class Config:
-        orm_mode = True
-
-
 class UserBase(BaseModel):
     id: Optional[uuid.UUID]
     email: str = Field(..., min_length=1, max_length=100)
@@ -61,6 +52,22 @@ class UserResponse(BaseModel):
         orm_mode = True
 
 
+class UserPostModel(PostBase):
+    created_at: datetime
+    updated_at: datetime
+    owner_id: uuid.UUID
+
+    class Config:
+        orm_mode = True
+
+
+class UserResponseWithPosts(UserResponse):
+    posts: list[UserPostModel]
+
+    class Config:
+        orm_mode = True
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -68,3 +75,13 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     sub: Optional[str] = None
+
+
+class PostResponse(PostBase):
+    created_at: datetime
+    updated_at: datetime
+    owner_id: uuid.UUID
+    owner: UserResponse
+
+    class Config:
+        orm_mode = True
