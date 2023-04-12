@@ -81,6 +81,7 @@ class PostResponse(PostBase):
     updated_at: datetime
     owner_id: uuid.UUID
     owner: UserResponse
+    count: int
 
     class Config:
         orm_mode = True

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Depends, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from src import models
@@ -48,7 +49,13 @@ async def find_all(db: Session = Depends(get_db), limit: int = 10, skip: int = 0
         .limit(limit) \
         .all()
 
+    count = db.query(func.count(models.Post.id)).scalar()
+
+    for post in post_list:
+        post.count = count
+
     return post_list
+
 
 
 @router.get("/my-posts", response_model=list[PostResponse], status_code=status.HTTP_200_OK)
