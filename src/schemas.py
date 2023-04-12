@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, conint
 
 
 class PostBase(BaseModel):
@@ -81,6 +81,14 @@ class PostResponse(PostBase):
     updated_at: datetime
     owner_id: uuid.UUID
     owner: UserResponse
+
+    class Config:
+        orm_mode = True
+
+
+class Vote(BaseModel):
+    post_id: uuid.UUID
+    direction: conint(ge=-1, le=1)
 
     class Config:
         orm_mode = True
