@@ -18,8 +18,7 @@ router = APIRouter(
 @router.post("", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
 async def create(request: PostCreate, db: Session = Depends(get_db),
                  current_user: models.User = Depends(oauth2.get_current_user)):
-    post = models.Post(**request.dict())
-    post.owner_id = current_user.id
+    post = models.Post(owner_id=current_user.id, **request.dict())
 
     db.add(post)
     db.commit()
@@ -64,13 +63,18 @@ async def find_one(post_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete(post_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
+async def delete(post_id: str, db: Session = Depends(get_db),
+                 current_user: models.User = Depends(oauth2.get_current_user)):
     try:
         post = db.query(models.Post).filter(models.Post.id == post_id).first()
 
         if not post:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {post_id} not found!")
+
+        if post.owner_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not allowed to delete this post!")
 
         db.delete(post)
         db.commit()
@@ -82,13 +86,18 @@ async def delete(post_id: str, db: Session = Depends(get_db), current_user: mode
 
 
 @router.put("/{post_id}", response_model=PostResponse, status_code=status.HTTP_200_OK)
-async def update(post_id: str, request: PostUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(oauth2.get_current_user)):
+async def update(post_id: str, request: PostUpdate, db: Session = Depends(get_db),
+                 current_user: models.User = Depends(oauth2.get_current_user)):
     try:
         post = db.query(models.Post).filter(models.Post.id == post_id).first()
 
         if not post:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail=f"Post with id: {post_id} not found!")
+
+        if post.owner_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not allowed to delete this post!")
 
         request = request.dict(exclude_unset=True)
 
