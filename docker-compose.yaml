@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  api:
+    container_name: fast-api
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    environment:
+      - DATABASE_HOSTNAME=db
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=fastapi
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=@Potter77
+      - SECRET_KEY=b84eb41558f3cf0f08fae0f43d462b7e4a0a22a46f409fa314b26bc01ea32b85
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+    depends_on:
+      - db
+
+    ports:
+      - "8000:8000"
+
+    command: uvicorn src.main:app --host --port 8000
+
+  db:
+    container_name: fast-api-db
+    image: postgres
+
+    environment:
+      POSTGRES_USER: ${DATABASE_USER-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD-@Potter77}
+      POSTGRES_DB: ${DATABASE_NAME-fastapi}
+      PGDATA: /data/postgres
+
+    volumes:
+      - db:/data/postgres
+
+    ports:
+      - "5332:5432"
+
+    networks:
+      - db
+
+    restart: on-failure
+
+networks:
+  db:
+    driver: bridge
+
+volumes:
+  db:

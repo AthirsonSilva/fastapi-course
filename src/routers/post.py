@@ -49,10 +49,10 @@ async def find_all(db: Session = Depends(get_db), limit: int = 10, skip: int = 0
         .limit(limit) \
         .all()
 
-    count = db.query(func.count(models.Post.id)).scalar()
-
     for post in post_list:
-        post.count = count
+        post.count = db.query(func.count(models.Vote.post_id)) \
+            .filter(models.Vote.post_id == post.id) \
+            .scalar()
 
     return post_list
 
